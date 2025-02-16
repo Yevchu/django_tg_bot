@@ -1,0 +1,38 @@
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tg-bot
+    environment:
+      BOT_TOKEN: "8005039661:AAE_P-7DmfSlmsyv8-M1cIc4Rqk2ZwX4eHU"
+      DATABASE_URL: "postgres://root:root@db:5432/test_db"
+    volumes:
+      - ./.:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - bot_network
+    command: python bot.py
+    
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bot_network
+
+volumes:
+  postgres_data:
+
+networks:
+  bot_network:
