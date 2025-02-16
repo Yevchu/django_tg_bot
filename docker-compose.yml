@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: tg-bot
     environment:
-      BOT_TOKEN: "8005039661:AAE_P-7DmfSlmsyv8-M1cIc4Rqk2ZwX4eHU"
-      DATABASE_URL: "postgres://root:root@db:5432/test_db"
+      BOT_TOKEN: ${BOT_TOKEN}
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - ./.:/app
     ports:
