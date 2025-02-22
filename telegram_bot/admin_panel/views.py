@@ -1,10 +1,8 @@
 import logging
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import Admin, Group, UserGroup, PotentialAdmin, ScheduledMessage
 from django.utils import timezone
-import json
+from django.db.models import Q
 from datetime import datetime
 
 # Configure logging
@@ -21,11 +19,6 @@ def handle_scheduled_message_form(request):
         message = request.POST.get('message')
         image = request.FILES.get('image')
         send_time = request.POST.get('send_time')
-
-        logger.info(f'Groups: {groups}')
-        logger.info(f'Message: {message}')
-        logger.info(f'Image: {image}')
-        logger.info(f'Send Time: {send_time}')
 
         for group_id in groups:
             try:
@@ -53,6 +46,27 @@ def active_groups(request):
         'groups': groups,
     }
     return render(request, 'active_groups.html', context)
+
+def search_groups(request):
+    search_query = request.GET.get('search', '')
+    if search_query:
+        groups = Group.objects.filter(Q(group_name__icontains=search_query))
+    else:
+        context['search_error'] = 'Не було знайдено жодної групи'
+    context = {
+        'groups': groups,
+        'search_query': search_query,
+    }
+    return render(request, 'search_results.html', context)
+
+def group_details(request, group_name):
+    group = Group.objects.get(group_name=group_name)
+    scheduled_messages = ScheduledMessage.objects.filter(group=group)
+    context = {
+        'group': group,
+        'scheduled_messages': scheduled_messages,
+    }
+    return render(request, 'group_details.html', context)
 
 def admins(request):
     admins = Admin.objects.all()

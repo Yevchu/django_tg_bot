@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="group_details" class="sub_section">
+    <h2>Group: {{ group.group_name }}</h2>
+    <p>Active: {{ group.is_active }}</p>
+    
+    <h3>Заплановані повідомлення</h3>
+    <ul>
+        {% for message in scheduled_messages %}
+            <li>
+                <p>Повідомлення: {{ message.message_text }}</p> 
+                <p>Час відправки: {{ message.send_time }}</p>
+                {% if message.image %}
+                    <p>
+                        Зображення:
+                        <img src="{{ message.image.url }}" alt="Scheduled message image">
+                    </p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

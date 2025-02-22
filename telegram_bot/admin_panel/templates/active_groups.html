@@ -3,9 +3,18 @@
 {% block content %}
 <div id="active_groups" class="section">
     <h2>Активні групи</h2>
+    <form method="GET" action="{% url 'search_groups' %}">
+        <input type="text" name="search" placeholder="Назва групи">
+        <button type="submit">Пошук</button>
+    </form>
+
     <ul>
         {% for group in groups %}
-            <li>Group: {{ group.group_name }} - Active: {{ group.is_active }}</li>
+            <li>
+                <a href="{% url 'group_details' group.group_name %}">
+                    Group: {{ group.group_name }} - Active: {{ group.is_active }}
+                </a>
+            </li>
         {% endfor %}
     </ul>
 </div>

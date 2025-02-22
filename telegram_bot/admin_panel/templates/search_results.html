@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="search_results" class="sub_section">
+    <h2>Результати пошуку для "{{ search_query }}"</h2>
+    <ul>
+        {% for group in groups %}
+            <li>
+                <a href="{% url 'group_details' group.group_name %}">Group: {{ group.group_name }} - Active: {{ group.is_active }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    {% if not groups %}
+        <p>Нічого не знайдено.</p>
+    {% endif %}
+</div>
+{% endblock %}
