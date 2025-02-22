@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin panel</title>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Навігація</h2>
+        <a href="#" onclick="showSection('groups')">Активні групи</a>
+        <a href="#" onclick="showSection('admins')">Адміни</a>
+        <a href="#" onclick="showSection('scheduled-messages')">Відправка відкладених повідомлень</a>
+    </div>
+
+    <div class="content">
+        <div id="groups" class="section active">
+            <h2>Активні групи</h2>
+            <ul>
+                {% for group in groups %}
+                    <li>Group: {{ group.group_name }} - Active: {{ group.is_active }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div id="admins" class="section">
+            <h2>Адміни</h2>
+            <ul>
+                {% for admin in admins %}
+                    <li>Admin: {{ admin.username }} - Super Admin: {{ admin.is_super_admin }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div id="scheduled-messages" class="section">
+            <h2>Відправка відкладених повідомлень</h2>
+            <form id="scheduled-message-form">
+                <label for="group">Group:</label>
+                <select id="group" name="group">
+                    {% for group in groups %}
+                        <option value="{{ group.group_id }}">{{ group.group_name }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="message">Message:</label>
+                <textarea id="message" name="message"></textarea>
+                <br>
+                <label for="send-time">Send Time:</label>
+                <input type="datetime-local" id="send-time" name="send-time">
+                <br>
+                <button type="submit">Schedule Message</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        let protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+        let socket = new WebSocket(protocol + window.location.host + "/ws/groups/");
+    
+        socket.onmessage = function(event) {
+            let data = JSON.parse(event.data);
+            console.log("Отримано дані:", data);
+    
+            if (data.action === "update") {
+                let group = data.group;
+                let groupElements = document.querySelectorAll("#groups li");
+                let groupElement = Array.from(groupElements).find(el => el.innerText.includes(group.group_name));
+    
+                if (groupElement) {
+                    groupElement.innerHTML = `Group: ${group.group_name} - Active: ${group.is_active}`;
+                }
+            }
+        };
+    
+        socket.onopen = function() {
+            console.log("WebSocket підключено!");
+        };
+    
+        socket.onclose = function() {
+            console.log("WebSocket відключено!");
+        };
+    </script>
+
+</body>
+</html>

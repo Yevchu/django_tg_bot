@@ -1,8 +1,13 @@
 import logging
 import os
 import django
+import asyncio
+import threading
+import websockets
+import json
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, MessageHandler, filters, ConversationHandler
+from telegram.error import Forbidden
 from dotenv import load_dotenv
 # Ініціалізація Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "telegram_bot.settings")
@@ -32,15 +37,17 @@ load_dotenv()
 
 SUPER_ADMIN_ID = os.getenv("SUPER_ADMIN_ID")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
+WEBSOCKET_URL = os.getenv("WEBSOCKET_URL")
 
 async def start(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
 
     await clean_old_potential_admins()
     await add_potential_admin(user.id, user.username)
-
-    await update.message.reply_text(f"Привіт, {user.first_name}! Тебе додано в список потенційних адміністраторів.")
+    try:
+        await update.message.reply_text(f"Привіт, {user.first_name}! Тебе додано в список потенційних адміністраторів.")
+    except Forbidden:
+        logger.warning(f"Користувач {user.id} заблокував бота.")
 
 def add_super_admin_if_not_exist(super_admin_id: int) -> None:
     admin = Admin.objects.filter(user_id=super_admin_id, is_super_admin=True).first()
@@ -51,11 +58,38 @@ def add_super_admin_if_not_exist(super_admin_id: int) -> None:
         message = f"Суперадміністратор з ID {super_admin_id} вже існує."
     return message
 
+async def error_handler(update: object, context: CallbackContext) -> None:
+    print(f"An error occurred: {context.error}")
+
+async def websockets_listener():
+    async with websockets.connect(WEBSOCKET_URL) as websocket:
+        logger.info('Websocket connection established.')
+        while True:
+            message = await websocket.recv()
+            data = json.loads(message)
+            logger.info(f"Message received: {data}")
+
+async def send_message_to_websockets(group_name: str, group_id: int):
+    async with websockets.connect(WEBSOCKET_URL) as websocket:
+        data = {
+            'action': 'new_group',
+            'group_name': group_name,
+            'group_id': group_id
+        }
+        await websocket.send(json.dumps(data))
+        logger.info(f"Message sent: {data}")
+
+def run_websockets_listener():
+    asyncio.run(websockets_listener())
+
 def main():
     
     message = add_super_admin_if_not_exist(SUPER_ADMIN_ID)
     logger.info(message)
 
+    ws_thead = threading.Thread(target=run_websockets_listener, daemon=True)
+    ws_thead.start()
+    
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     logger.info("Бот запущено...")
 
@@ -101,6 +135,8 @@ def main():
     ))
 
     app.add_handler(CommandHandler("leave_group", leave_group))
+
+    app.add_error_handler(error_handler)
 
     app.run_polling()
 

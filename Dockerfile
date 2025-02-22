@@ -1,5 +1,9 @@
 FROM python:3.12
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 # Встановлюємо робочу директорію в контейнері
 WORKDIR /usr/src/app
 
@@ -17,5 +21,8 @@ RUN poetry install --no-root --no-interaction
 ENV PYTHONPATH="/usr/src/app/telegram_bot"
 ENV DJANGO_SETTINGS_MODULE=telegram_bot.settings
 
+# Expose port 8000 for Django
+EXPOSE 8000
+
 # Запускаємо бота (замініть при необхідності)
-CMD ["python", "telegram_bot/bot.py"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "telegram_bot.asgi:application"]

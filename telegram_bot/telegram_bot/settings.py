@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'admin_panel',
     'bot_app'
 ]
@@ -78,8 +79,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'telegram_bot.wsgi.application'
+ASGI_APPLICATION = 'telegram_bot.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -90,7 +96,7 @@ DATABASES = {
         "NAME": POSTGRES_DB,
         "USER": POSTGRES_USER,
         "PASSWORD": POSTGRES_PASSWORD,
-        "HOST": POSTGRES_HOST,
+        "HOST": 'localhost',
         "PORT": POSTGRES_PORT,
     }
 }

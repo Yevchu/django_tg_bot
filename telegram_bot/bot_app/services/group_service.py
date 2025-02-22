@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from asgiref.sync import sync_to_async
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(astime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
@@ -15,33 +15,35 @@ logger = logging.getLogger(__name__)
 class GroupService:
 
     @staticmethod
-    async def add_user(user_id: int, group_id: int) -> Optional[UserGroup|str]:
+    async def add_user(user_id: int, group: Group) -> Optional[bool]:
         try:
-            user = await UserGroup.objects.acreate(user_id=user_id, group_id=group_id)
-            return user
+            await UserGroup.objects.acreate(user_id=user_id, group=group)
+            return True
         except IntegrityError as e:
-            return f'Виникла помилка {e}'
+            logging.error(f'Виникла помилка: {e}')
         
     @staticmethod
-    async def get_user(user_id: int, group_id: int) -> UserGroup:
-        return await UserGroup.objects.filter(user_id=user_id, group_id=group_id).afirst()
+    async def get_user(user_id: int, group: Group) -> UserGroup:
+        return await UserGroup.objects.filter(user_id=user_id, group=group).afirst()
     
     @staticmethod
     async def add_unique_member(group: Group, user_id: int) -> bool:
-        logger.debug(f"Виклик add_unique_member для групи {group.group_id} з user_id={user_id}")
+        logger.info(f"Виклик add_unique_member для групи {group.group_id} з user_id={user_id}")
         
-        existing_user = await GroupService.get_user(user_id=user_id, group_id=group.group_id)
+        existing_user = await GroupService.get_user(user_id=user_id, group=group)
         if existing_user:
             logger.info(f"Користувач {user_id} вже існує в групі {group.group_id}")
             return False
-        
-        try:
-            await GroupService.add_user(user_id=user_id, group_id=group.group_id)
-            await Group.objects.filter(group_id=group.group_id).aupdate({"unique_members_count": Group.unique_members_count + 1})
-            return True
-        except IntegrityError:
-            logger.error(f"Помилка при додаванні користувача {user_id} до групи {group.group_id}", exc_info=True)
-            return False
+        else:
+            try:
+                await GroupService.add_user(user_id=user_id, group=group)
+                group_instance = await GroupService.get_group_by_identifier(group.group_id)
+                group_instance.unique_members_count += 1
+                await group_instance.asave(update_fields=["unique_members_count"])
+                return True
+            except IntegrityError:
+                logger.error(f"Помилка при додаванні користувача {user_id} до групи {group.group_id}", exc_info=True)
+                return False
     
     @staticmethod
     async def get_group_by_identifier(group_identifier: str|int) -> Group:

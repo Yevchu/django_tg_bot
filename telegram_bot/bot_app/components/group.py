@@ -39,7 +39,7 @@ async def new_chat_member(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             if user.id != context.bot.id:
                 logger.info('Trying to add user: ID %d, name: %s', user.id, user.full_name)
                 try:
-                    success = await GroupService.add_unique_member(group_id, user.id)
+                    success = await GroupService.add_unique_member(is_existing_group, user.id)
                     if success:
                         logger.info('Success: User ID %d, name %s added to group "%s"', user.id, user.full_name, group_title)
                     else:
@@ -87,9 +87,9 @@ async def count_specific_group_process(update: Update, context: ContextTypes.DEF
 
     try:
         group = await GroupService.get_group_by_identifier(group_identifier)
-        await update.message.reply_text(update.effective_user.id, f'Group ID: {group.group_id}, Group Name: {group.group_name}, Max Member Count: {group.max_member_count}, Unique Members Count: {group.unique_members_count}')
+        await update.message.reply_text(f'Group ID: {group.group_id}, Group Name: {group.group_name}, Max Member Count: {group.max_member_count}, Unique Members Count: {group.unique_members_count}')
     except Group.DoesNotExist:
-        await update.message.reply_text(update.effective_user.id, 'Group not found.')
+        await update.message.reply_text('Group not found.')
 
     return ConversationHandler.END
 
