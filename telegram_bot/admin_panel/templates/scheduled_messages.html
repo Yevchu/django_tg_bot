@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="scheduled_messages" class="section">
+    <h2>Відправка відкладених повідомлень</h2>
+    {% if success_message %}
+        <p class="success-message">{{ success_message }}</p>
+    {% endif %}
+    <form id="scheduled-message-form" method="post" enctype="multipart/form-data" onsubmit="logFormSubmission(event)">
+        {% csrf_token %}
+        <label for="groups">Groups:</label>
+        <select id="groups" name="groups" multiple>
+            {% for group in groups %}
+                <option value="{{ group.id }}">{{ group.group_name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message"></textarea>
+        <br>
+        <label for="image">Image:</label>
+        <input type="file" id="image" name="image">
+        <br>
+        <label for="send-time">Send Time:</label>
+        <input type="datetime-local" id="send-time" name="send_time">
+        <br>
+        <button type="submit">Schedule Message</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin panel</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+    <script src="{% static 'js/admin_panel.js' %}" defer></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Навігація</h2>
+        <a href="{% url 'active_groups' %}">Активні групи</a>
+        <a href="{% url 'admins' %}">Адміни</a>
+        <a href="{% url 'scheduled_messages' %}">Відправка відкладених повідомлень</a>
+    </div>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

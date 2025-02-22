@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import admin_panel
+from . import views
 
 urlpatterns = [
-    path('', admin_panel, name='admin_panel'),
+    path('', views.main, name='main'),
+    path('active_groups/', views.active_groups, name='active_groups'),
+    path('admins/', views.admins, name='admins'),
+    path('scheduled_messages/', views.scheduled_messages, name='scheduled_messages'),
 ]
-

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="active_groups" class="section">
+    <h2>Активні групи</h2>
+    <ul>
+        {% for group in groups %}
+            <li>Group: {{ group.group_name }} - Active: {{ group.is_active }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

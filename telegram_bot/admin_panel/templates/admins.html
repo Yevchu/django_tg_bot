@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="admins" class="section">
+    <h2>Адміни</h2>
+    <ul>
+        {% for admin in admins %}
+            <li>Admin: {{ admin.username }} - Super Admin: {{ admin.is_super_admin }}</li>
+        {% endfor %}
+    </ul>
+    <ul>
+        {% for admin in potential_admins %}
+            <li>Potential admin: {{ admin.username }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

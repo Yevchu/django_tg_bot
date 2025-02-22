@@ -19,7 +19,6 @@ class Group(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     unique_members_count = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
-    max_member_count = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'groups'
@@ -51,15 +50,17 @@ class PotentialAdmin(models.Model):
         return f"Potential Admin {self.username or self.user_id}"
 
 class ScheduledMessage(models.Model):
-    group_id = models.BigIntegerField()
-    group_name = models.CharField(max_length=255)
+    group = models.ForeignKey(
+        'Group', on_delete=models.CASCADE, related_name='scheduled_messages'
+    )
     send_time = models.DateTimeField()
-    message_text = models.TextField()
+    message_text = models.TextField(blank=True)
+    image = models.ImageField(upload_to='scheduled_messages/', blank=True)
     is_send = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'scheduled_messages'
 
     def __str__(self):
-        return f"Message to {self.group_name} at {self.send_time}"
+        return f"Message to {self.group.group_name} at {self.send_time}"
 
