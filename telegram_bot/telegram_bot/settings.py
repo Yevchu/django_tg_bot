@@ -10,6 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import cloudinary
+import cloudinary.api
+import cloudinary.uploader
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -18,18 +21,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
 
+if os.environ.get('ENVIROMENT') == 'docker-compose':
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+else:
+    POSTGRES_HOST = 'localhost'
+    
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 POSTGRES_DB = os.getenv('POSTGRES_DB')
-POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 POSTGRES_PORT= os.getenv('POSTGRES_PORT')
-
+S_KEY = os.getenv('SECRET_KEY')
+CLOUDINARY_KEY=os.getenv('CLOUDINARY_KEY')
+CLOUDINARY_SECRE=os.getenv('CLOUDINARY_SECRE')
+CLOUDINARY_NAME=os.getenv('CLOUDINARY_NAME')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pbd1)(v@!uqy_^-l0xve58f_rzjn1evx!u3i38^@$0x3hi1u8r'
+SECRET_KEY = S_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,7 +106,7 @@ DATABASES = {
         "NAME": POSTGRES_DB,
         "USER": POSTGRES_USER,
         "PASSWORD": POSTGRES_PASSWORD,
-        "HOST": 'localhost',
+        "HOST": POSTGRES_HOST,
         "PORT": POSTGRES_PORT,
     }
 }
@@ -126,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Kyiv'
 
 USE_I18N = True
 
@@ -146,3 +156,14 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configure cloudinary
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': CLOUDINARY_NAME,
+    'API_KEY': CLOUDINARY_KEY,
+    'API_SECRET': CLOUDINARY_SECRE
+}
+
+DEFAULT_CLOUD_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+

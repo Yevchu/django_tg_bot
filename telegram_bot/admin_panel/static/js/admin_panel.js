@@ -28,6 +28,22 @@ function loadSection(section) {
         .catch(error => console.error('Error loading section:', error));
 }
 
+function previewImage(event) {
+    const input = event.target;
+    const preview = document.getElementById("preview");
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.src = e.target.result;  // 🔹 Встановлюємо URL вибраного фото
+            preview.style.display = "block";  // 🔹 Робимо зображення видимим
+        };
+
+        reader.readAsDataURL(input.files[0]);  // 🔹 Читаємо файл у base64
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const section = getSectionFromUrl();
     loadSection(section);

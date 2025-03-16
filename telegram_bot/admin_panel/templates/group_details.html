@@ -4,21 +4,54 @@
 <div id="group_details" class="sub_section">
     <h2>Group: {{ group.group_name }}</h2>
     <p>Active: {{ group.is_active }}</p>
+    <div class="container" style='display: flex; justify-content: space-around;'>
+        <div class="wrapper">
+            <h3>Заплановані повідомлення</h3>
+            <ul>
+                {% for message in scheduled_messages %}
+                    {% if message.is_send == False %}
+                        <li>
+                            <p>Повідомлення: {{ message.message_text }}</p> 
+                            <p>Час відправки: {{ message.send_time }}</p>
+                            <p>Статус відправки: 
+                                <span style="color: rgb(255, 0, 0);">Заплановано</span>
+                            </p>
     
-    <h3>Заплановані повідомлення</h3>
-    <ul>
-        {% for message in scheduled_messages %}
-            <li>
-                <p>Повідомлення: {{ message.message_text }}</p> 
-                <p>Час відправки: {{ message.send_time }}</p>
-                {% if message.image %}
-                    <p>
-                        Зображення:
-                        <img src="{{ message.image.url }}" alt="Scheduled message image">
-                    </p>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+                            {% if message.image %}
+                                <p>
+                                    Зображення:
+                                    <img src="{{ message.image }}" alt="Scheduled message image" style="width: 100px;">
+                                </p>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="wrapper">
+            <h3>Відравленні повідомлення</h3>
+            <ul>        
+                {% for message in scheduled_messages %}
+                    {% if message.is_send == True %}
+                        <li>
+                            <p>Повідомлення: {{ message.message_text }}</p> 
+                            <p>Час відправки: {{ message.send_time }}</p>
+                            <p>Статус відправки: 
+                                <span style="color: green;">Відправлено</span>
+                            </p>
+
+                            {% if message.image %}
+                                <p>
+                                    Зображення:
+                                    <img src="{{ message.image }}" alt="Scheduled message image" style="width: 100px;">
+                                </p>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </div>
 {% endblock %}

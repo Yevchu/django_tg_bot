@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: tg-bot
     environment:
+      ENVIROMENT: docker-compose
       BOT_TOKEN: ${BOT_TOKEN}
       DATABASE_URL: ${DATABASE_URL}
     volumes:
@@ -13,7 +14,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-      - django
     networks:
       - bot_network
     command: python bot.py
@@ -31,23 +31,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - bot_network
-
-  django:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: django-app
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    volumes:
-      - ./.:/usr/src/app
-    ports:
-      - "8001:8000"
-    depends_on:
-      - db
-    networks:
-      - bot_network
-    command: daphne -b 0.0.0.0 -p 8000 telegram_bot.asgi:application
 
 volumes:
   postgres_data:

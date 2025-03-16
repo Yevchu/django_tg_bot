@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class Admin(models.Model):
@@ -55,7 +56,7 @@ class ScheduledMessage(models.Model):
     )
     send_time = models.DateTimeField()
     message_text = models.TextField(blank=True)
-    image = models.ImageField(upload_to='scheduled_messages/', blank=True)
+    image = CloudinaryField(null=True, blank=True)
     is_send = models.BooleanField(default=False)
 
     class Meta:

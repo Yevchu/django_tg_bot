@@ -1,9 +1,10 @@
 import logging
-from django.shortcuts import render, redirect
-from .models import Admin, Group, UserGroup, PotentialAdmin, ScheduledMessage
+from django.shortcuts import render
+from .models import Admin, Group, PotentialAdmin, ScheduledMessage
 from django.utils import timezone
 from django.db.models import Q
 from datetime import datetime
+import cloudinary.uploader
 
 # Configure logging
 logging.basicConfig(
@@ -12,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def handle_scheduled_message_form(request):
-    success_message = None
+    message_state = None
     if request.method == 'POST':
         logger.info('Received POST request')
         groups = request.POST.getlist('groups')
@@ -22,20 +23,30 @@ def handle_scheduled_message_form(request):
 
         for group_id in groups:
             try:
+                upload_result = None
+                if image:
+                    public_id = f'groupID_{group_id}_sendtime_{send_time}'
+                    upload_result = cloudinary.uploader.upload(image, public_id=public_id)
                 group = Group.objects.get(id=group_id)
                 send_time_aware = timezone.make_aware(datetime.strptime(send_time, '%Y-%m-%dT%H:%M'))
+
+                if send_time_aware < timezone.now():
+                    logger.error('Send time is in the past')
+                    message_state = 'Send time is in the past'
+                    break
+
                 ScheduledMessage.objects.create(
                     group=group,
                     message_text=message,
-                    image=image,
+                    image=upload_result['secure_url'] if upload_result else image,
                     send_time=send_time_aware
                 )
                 logger.info(f'Scheduled message for group {group_id}')
-                success_message = "Message scheduled successfully!"
+                message_state = "Message scheduled successfully!"
             except Group.DoesNotExist:
                 logger.error(f'Group with id {group_id} does not exist')
 
-    return success_message
+    return message_state
 
 def main(request):
     return render(request, 'base.html')
@@ -78,13 +89,13 @@ def admins(request):
     return render(request, 'admins.html', context)
 
 def scheduled_messages(request):
-    success_message = handle_scheduled_message_form(request)
+    message_state = handle_scheduled_message_form(request)
     groups = Group.objects.all()
     scheduled_messages = ScheduledMessage.objects.all()
     context = {
         'groups': groups,
         'scheduled_messages': scheduled_messages,
-        'success_message': success_message,
+        'message_state': message_state,
     }
     return render(request, 'scheduled_messages.html', context)
 
